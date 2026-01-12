@@ -14,15 +14,15 @@ export function generateAdminInviteToken(userId: string, tenantId: string): stri
     throw new Error("JWT_SECRET is not defined")
   }
   return jwt.sign(
-    { 
-      userId, 
+    {
+      userId,
       tenantId,
-      type: "admin_invite" 
-    }, 
-    JWT_SECRET, 
+      type: "admin_invite",
+    },
+    JWT_SECRET,
     {
       expiresIn: "7d",
-    }
+    },
   )
 }
 
@@ -36,9 +36,9 @@ export function verifyAdminInviteToken(token: string): { userId: string; tenantI
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any
     if (decoded && decoded.type === "admin_invite" && decoded.userId && decoded.tenantId) {
-      return { 
+      return {
         userId: decoded.userId,
-        tenantId: decoded.tenantId 
+        tenantId: decoded.tenantId,
       }
     }
   } catch (error) {
@@ -50,10 +50,10 @@ export function verifyAdminInviteToken(token: string): { userId: string; tenantI
 
 /**
  * Generate invitation link URL for email
+ * Added tenantSlug parameter to include slug in the URL
  */
-export function generateAdminInviteLink(userId: string, tenantId: string, baseUrl: string): string {
+export function generateAdminInviteLink(userId: string, tenantId: string, tenantSlug: string, baseUrl: string): string {
   const token = generateAdminInviteToken(userId, tenantId)
-  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
-  return `${cleanBaseUrl}/staff/setup-password?token=${encodeURIComponent(token)}`
+  const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl
+  return `${cleanBaseUrl}/${tenantSlug}/staff/setup-password?token=${encodeURIComponent(token)}`
 }
-

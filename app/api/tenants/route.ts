@@ -135,12 +135,12 @@ export async function POST(request: NextRequest) {
 
       // Send invitation email
       const baseUrl = new URL(request.url).origin
-      const inviteLink = generateAdminInviteLink(adminUser._id.toString(), tenant._id.toString(), baseUrl)
+      const inviteLink = generateAdminInviteLink(adminUser._id.toString(), tenant._id.toString(), tenant.slug, baseUrl)
 
       await sendEmail({
-      to: adminEmail,
-      subject: `Welcome to ${name} on Rahmah Exchange - Set Your Password`,
-      html: `
+        to: adminEmail,
+        subject: `Welcome to ${name} on Rahmah Exchange - Set Your Password`,
+        html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #0d9488;">Welcome to Rahmah Exchange</h2>
             <p>Assalamu Alaikum ${escapeHtml(adminName)},</p>
@@ -151,11 +151,11 @@ export async function POST(request: NextRequest) {
                 Set Your Password
               </a>
             </p>
-            <p>Or copy this link: <a href="${inviteLink}">${inviteLink}</a></p>
+           
             <p style="color: #666; font-size: 14px; margin-top: 20px;">
               <strong>Note:</strong> This link will expire in 7 days. If it expires, please contact the super administrator.
             </p>
-            <p>After setting your password, you can log in at: <a href="${baseUrl}/staff/login">${baseUrl}/staff/login</a></p>
+            <p>After setting your password, you can log in at: <a href="${baseUrl}/${tenant.slug}/staff/login">${baseUrl}/${tenant.slug}/staff/login</a></p>
             <p>Best regards,<br>Rahmah Exchange Team</p>
           </div>
         `,
@@ -170,7 +170,7 @@ ${inviteLink}
 
 Note: This link will expire in 7 days.
 
-After setting your password, you can log in at: ${baseUrl}/staff/login
+After setting your password, you can log in at: ${baseUrl}/${tenant.slug}/staff/login
 
 Best regards,
 Rahmah Exchange Team`,

@@ -23,4 +23,3 @@ export default function StaffSegmentLayout({ children }: Props) {
 
   return <StaffLayout>{children}</StaffLayout>
 }
-

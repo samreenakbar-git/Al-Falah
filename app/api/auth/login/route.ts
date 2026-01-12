@@ -1,12 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { dbConnect } from "@/lib/db"
 import User from "@/lib/models/User"
+import Tenant from "@/lib/models/Tenant"
 import { generateToken } from "@/lib/jwt-utils"
 import bcrypt from "bcryptjs"
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
+    const { email, password, masjidSlug } = await request.json()
 
     if (!email || !password) {
       return NextResponse.json({ message: "Email and password required" }, { status: 400 })
@@ -25,8 +26,20 @@ export async function POST(request: NextRequest) {
     if (user.isActive === false) {
       return NextResponse.json(
         { message: "Your profile is currently inactive. Please contact an administrator." },
-        { status: 403 }
+        { status: 403 },
       )
+    }
+
+    if (masjidSlug) {
+      const tenant = await Tenant.findOne({ slug: masjidSlug })
+      if (!tenant) {
+        return NextResponse.json({ message: "Masjid not found" }, { status: 404 })
+      }
+
+      // Check if user's tenant matches the provided masjid slug
+      if (!user.tenantId || user.tenantId.toString() !== tenant._id.toString()) {
+        return NextResponse.json({ message: "You don't have access to this masjid" }, { status: 403 })
+      }
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -68,7 +81,7 @@ export async function POST(request: NextRequest) {
         message: "Server error. Please try again.",
         error: process.env.NODE_ENV === "development" ? error?.message : undefined,
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

@@ -1,11 +1,8 @@
 # Environment files
-.env
-.env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env.example.local
-.env.*
 
 # Dependencies
 node_modules/
@@ -39,7 +36,6 @@ coverage/
 .nyc_output/
 
 # IDE and Editor files
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -79,3 +75,4 @@ Desktop.ini
 # package-lock.json
 # pnpm-lock.yaml
 # yarn.lock
+config.bat

@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter, usePathname, useParams } from "next/navigation"
 import { FileText, LogOut, Users, MessageSquare, Shield, Share2 } from "lucide-react"
 import { removeAuthToken, getAuthToken, authenticatedFetch } from "@/lib/auth-utils"
 import { jwtDecode } from "jwt-decode"
@@ -18,14 +18,18 @@ interface StaffLayoutProps {
 export default function StaffLayout({ children, title, description }: StaffLayoutProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const params = useParams()
+  const masjidSlug = (params.masjidSlug as string) || ""
   const [userRole, setUserRole] = useState<string>("")
   const [userName, setUserName] = useState<string>("")
   const [loading, setLoading] = useState(true)
 
+  const basePath = masjidSlug ? `/${masjidSlug}/staff` : `/staff`
+
   useEffect(() => {
     const token = getAuthToken()
     if (!token) {
-      router.push("/staff/login")
+      router.push(`${basePath}/login`)
       return
     }
 
@@ -36,9 +40,9 @@ export default function StaffLayout({ children, title, description }: StaffLayou
       setLoading(false)
     } catch (err) {
       console.error("Failed to decode token:", err)
-      router.push("/staff/login")
+      router.push(`${basePath}/login`)
     }
-  }, [router])
+  }, [router, basePath])
 
   const handleLogout = async () => {
     try {
@@ -50,10 +54,10 @@ export default function StaffLayout({ children, title, description }: StaffLayou
         }).catch(() => {})
       }
       removeAuthToken()
-      router.push("/staff/login")
+      router.push(`${basePath}/login`)
     } catch {
       removeAuthToken()
-      router.push("/staff/login")
+      router.push(`${basePath}/login`)
     }
   }
 
@@ -61,16 +65,16 @@ export default function StaffLayout({ children, title, description }: StaffLayou
     {
       name: "Dashboard",
       icon: FileText,
-      href: "/staff/dashboard",
-      active: pathname === "/staff/dashboard",
+      href: `${basePath}/dashboard`,
+      active: pathname === `${basePath}/dashboard`,
     },
     ...(userRole && ["admin", "caseworker", "approver", "treasurer", "super_admin"].includes(userRole)
       ? [
           {
             name: "All Cases",
             icon: FileText,
-            href: "/staff/cases",
-            active: pathname === "/staff/cases" || pathname.startsWith("/staff/cases/"),
+            href: `${basePath}/cases`,
+            active: pathname === `${basePath}/cases` || pathname.startsWith(`${basePath}/cases/`),
           },
         ]
       : []),
@@ -79,8 +83,8 @@ export default function StaffLayout({ children, title, description }: StaffLayou
           {
             name: "Applicants Messages ",
             icon: MessageSquare,
-            href: "/staff/messages-applicants",
-            active: pathname === "/messages",
+            href: `${basePath}/messages-applicants`,
+            active: pathname === `${basePath}/messages-applicants`,
           },
         ]
       : []),
@@ -89,8 +93,8 @@ export default function StaffLayout({ children, title, description }: StaffLayou
           {
             name: "Staff Messages",
             icon: Users,
-            href: "/staff/messages",
-            active: pathname === "/staff/messages",
+            href: `${basePath}/messages`,
+            active: pathname === `${basePath}/messages`,
           },
         ]
       : []),
@@ -99,8 +103,8 @@ export default function StaffLayout({ children, title, description }: StaffLayou
           {
             name: "Shared Profiles",
             icon: Share2,
-            href: "/staff/shared-profiles",
-            active: pathname === "/staff/shared-profiles",
+            href: `${basePath}/shared-profiles`,
+            active: pathname === `${basePath}/shared-profiles`,
           },
         ]
       : []),
@@ -109,8 +113,8 @@ export default function StaffLayout({ children, title, description }: StaffLayou
           {
             name: "Manage Users",
             icon: Users,
-            href: "/staff/users",
-            active: pathname === "/staff/users",
+            href: `${basePath}/users`,
+            active: pathname === `${basePath}/users`,
           },
         ]
       : []),
@@ -119,8 +123,8 @@ export default function StaffLayout({ children, title, description }: StaffLayou
           {
             name: "Manage Masjids",
             icon: Shield,
-            href: "/staff/tenants",
-            active: pathname === "/staff/tenants",
+            href: `${basePath}/tenants`,
+            active: pathname === `${basePath}/tenants`,
           },
         ]
       : []),
@@ -145,44 +149,38 @@ export default function StaffLayout({ children, title, description }: StaffLayou
         <div className="h-16 flex items-center px-6 border-b">
           <Image src="/logo1.svg" alt="Logo" width={100} height={100} />
         </div>
-  
+
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
-  {navItems.map((item) => {
-    const Icon = item.icon
-    const isActive =
-      pathname === item.href ||
-      pathname.startsWith(item.href + "/")
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
 
-    return (
-      <Link
-        key={item.name}
-        href={item.href}
-        className={`relative group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-200
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`relative group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-200
           ${
             isActive
               ? "bg-gradient-to-r from-teal-500/10 to-teal-500/0 text-teal-700 font-semibold shadow-sm"
               : "text-gray-700 hover:bg-gray-100"
           }
         `}
-      >
-        {/* Left Active Indicator */}
-        {isActive && (
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-full bg-gradient-to-b from-teal-400 to-teal-600" />
-        )}
+              >
+                {/* Left Active Indicator */}
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-full bg-gradient-to-b from-teal-400 to-teal-600" />
+                )}
 
-        <Icon
-          className={`w-4 h-4 transition-colors ${
-            isActive ? "text-teal-600" : "text-gray-500"
-          }`}
-        />
+                <Icon className={`w-4 h-4 transition-colors ${isActive ? "text-teal-600" : "text-gray-500"}`} />
 
-        <span>{item.name}</span>
-      </Link>
-    )
-  })}
-</nav>
-  
+                <span>{item.name}</span>
+              </Link>
+            )
+          })}
+        </nav>
+
         {/* Logout */}
         <div className="p-4 border-t">
           <button
@@ -194,7 +192,7 @@ export default function StaffLayout({ children, title, description }: StaffLayou
           </button>
         </div>
       </aside>
-  
+
       {/* RIGHT SIDE */}
       <div className="flex-1 ml-64 flex flex-col">
         {/* HEADER */}
@@ -203,7 +201,7 @@ export default function StaffLayout({ children, title, description }: StaffLayou
           <h1 className="text-lg font-semibold text-gray-800 capitalize">
             {pathname.replace("/staff/", "").replace("-", " ") || "Dashboard"}
           </h1>
-  
+
           {/* User Info */}
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600">{userName}</span>
@@ -212,12 +210,10 @@ export default function StaffLayout({ children, title, description }: StaffLayou
             </div>
           </div>
         </header>
-  
+
         {/* PAGE CONTENT */}
-        <main className="flex-1 p-2">
-          {children}
-        </main>
+        <main className="flex-1 p-2">{children}</main>
       </div>
     </div>
   )
-}  
+}
